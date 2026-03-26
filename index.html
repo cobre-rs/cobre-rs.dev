@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobre — Open infrastructure for power system computation</title>
+<meta name="description" content="Stochastic optimization for hydrothermal dispatch. Built in Rust, open source, production-ready.">
+<meta property="og:title" content="Cobre — Open infrastructure for power system computation">
+<meta property="og:description" content="Stochastic optimization for hydrothermal dispatch. Built in Rust, open source, production-ready.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cobre-rs.dev">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cline x1='18' y1='25' x2='68' y2='25' stroke='%23B87333' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='18' y1='50' x2='68' y2='50' stroke='%23B87333' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='18' y1='75' x2='68' y2='75' stroke='%23B87333' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='68' y1='25' x2='68' y2='75' stroke='%23B87333' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='68' cy='25' r='4' fill='%23F5A623'/%3E%3Ccircle cx='68' cy='50' r='4' fill='%23F5A623'/%3E%3Ccircle cx='68' cy='75' r='4' fill='%23F5A623'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --copper: #B87333;
+  --copper-light: #D4956A;
+  --copper-dark: #8B5E3C;
+  --spark: #F5A623;
+  --flow: #4A90B8;
+  --midnight: #0F1419;
+  --surface: #1A2028;
+  --bright: #E8E6E3;
+  --muted: #8B9298;
+  --body: #C8C6C2;
+  --border: #2D3440;
+  --patina: #4A8B6F;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--midnight);
+  color: var(--body);
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 0 1.5rem;
+  margin-bottom: 2vh;
+}
+
+.logo-mark { margin-bottom: 1.5rem; opacity: 0; }
+
+.hero-content h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 300;
+  color: var(--bright);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
+  opacity: 0;
+}
+.hero-content h1 strong { font-weight: 500; color: var(--copper-light); }
+
+.hero-content .tagline {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  color: var(--muted);
+  font-weight: 300;
+  max-width: 520px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+  opacity: 0;
+}
+
+.hero-cmd {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(26,32,40,0.8);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--body);
+  cursor: pointer;
+  transition: border-color 0.3s;
+  opacity: 0;
+  text-decoration: none;
+}
+.hero-cmd:hover { border-color: var(--copper); }
+.hero-cmd .prompt { color: var(--patina); }
+
+/* Nav bar */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 2rem;
+  background: rgba(15,20,25,0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(45,52,64,0.3);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--bright);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links a {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--copper-light); }
+
+/* Copy feedback */
+.hero-cmd .copied { display: none; color: var(--patina); font-family: 'IBM Plex Sans', sans-serif; }
+.hero-cmd.show-copied .cmd-text { display: none; }
+.hero-cmd.show-copied .copied { display: inline; }
+
+/* ─── Below-fold sections ─── */
+.section {
+  padding: 5rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.section-title {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.section-title h2 {
+  color: var(--bright);
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-weight: 500;
+}
+
+/* Audience cards */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.card {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1.75rem;
+  border-top: 3px solid;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.card-newave { border-color: #DC4C4C; }
+.card-sddp { border-color: var(--flow); }
+.card-python { border-color: var(--spark); }
+.card h3 {
+  color: var(--bright);
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+.card p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+  flex: 1;
+}
+.card-link {
+  color: var(--copper-light);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.card-link:hover { color: var(--copper); }
+.card-links {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* Metrics */
+.metrics {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  flex-wrap: wrap;
+  text-align: center;
+  padding: 3.5rem 2rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.metric .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(1.3rem, 3vw, 1.75rem);
+  font-weight: 500;
+  color: var(--copper-light);
+}
+.metric .label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Code examples */
+.code-section {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.code-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.code-tab {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.8rem;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.code-tab.active {
+  color: var(--copper-light);
+  border-bottom-color: var(--copper);
+}
+.code-tab:hover { color: var(--bright); }
+.code-panel {
+  display: none;
+  background: var(--surface);
+  border-radius: 0 0 8px 8px;
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+.code-panel.active { display: block; }
+.code-panel pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: var(--body);
+  margin: 0;
+  white-space: pre;
+}
+.code-panel .kw { color: var(--copper-light); }
+.code-panel .str { color: var(--patina); }
+.code-panel .cm { color: var(--muted); font-style: italic; }
+.code-panel .fn { color: var(--flow); }
+.code-panel .pr { color: var(--patina); }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 2.5rem 2rem 3rem;
+  border-top: 1px solid var(--border);
+}
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--copper-light); }
+.footer-copy {
+  color: var(--muted);
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-svg * { animation: none !important; }
+}
+
+@media (max-width: 640px) {
+  .section { padding: 3rem 1.25rem; }
+  .metrics { gap: 2rem; }
+  .nav-links { gap: 14px; }
+  .nav-links a { font-size: 0.75rem; }
+  .footer-links { gap: 1.25rem; }
+  .code-tab { padding: 0.6rem 0.9rem; font-size: 0.75rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav bar -->
+<nav class="nav" id="nav">
+  <a class="nav-logo" href="/">
+    <svg width="24" height="24" viewBox="0 0 100 100">
+      <line x1="18" y1="25" x2="68" y2="25" stroke="#B87333" stroke-width="5" stroke-linecap="round"/>
+      <line x1="18" y1="50" x2="68" y2="50" stroke="#B87333" stroke-width="5" stroke-linecap="round"/>
+      <line x1="18" y1="75" x2="68" y2="75" stroke="#B87333" stroke-width="5" stroke-linecap="round"/>
+      <line x1="68" y1="25" x2="68" y2="75" stroke="#B87333" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="68" cy="25" r="4" fill="#F5A623"/>
+      <circle cx="68" cy="50" r="4" fill="#F5A623"/>
+      <circle cx="68" cy="75" r="4" fill="#F5A623"/>
+    </svg>
+    Cobre
+  </a>
+  <div class="nav-links">
+    <a href="https://docs.cobre-rs.dev">Docs</a>
+    <a href="https://github.com/cobre-rs/cobre">GitHub</a>
+    <a href="https://pypi.org/project/cobre-python/">PyPI</a>
+  </div>
+</nav>
+
+<section class="hero">
+
+<svg class="hero-svg" id="scene" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMax slice">
+<defs>
+  <radialGradient id="horizon-glow" cx="50%" cy="72%" rx="45%" ry="12%">
+    <stop offset="0%" stop-color="#B87333" stop-opacity="0.2"/>
+    <stop offset="50%" stop-color="#B87333" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="#B87333" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="water-fill" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#4A90B8" stop-opacity="0.12"/>
+    <stop offset="50%" stop-color="#4A90B8" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="#0F1419"/>
+  </linearGradient>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#0F1419"/>
+    <stop offset="70%" stop-color="#131920"/>
+    <stop offset="90%" stop-color="#1A2028"/>
+    <stop offset="100%" stop-color="#1F2733"/>
+  </linearGradient>
+  <linearGradient id="dam-face" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#2D3440"/>
+    <stop offset="100%" stop-color="#1A2028"/>
+  </linearGradient>
+  <linearGradient id="tower-shade" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#2D3440"/>
+    <stop offset="100%" stop-color="#1E2530"/>
+  </linearGradient>
+  <clipPath id="water-clip">
+    <rect x="0" y="534" width="580" height="266"/>
+  </clipPath>
+  <clipPath id="solar-glint-clip">
+    <rect x="695" y="538" width="160" height="25"/>
+  </clipPath>
+</defs>
+
+<!-- Sky -->
+<rect width="1400" height="800" fill="url(#sky)"/>
+
+<!-- Horizon glow (breathing) -->
+<rect id="glow" width="1400" height="800" fill="url(#horizon-glow)" opacity="0.6"/>
+
+<!-- Stars -->
+<circle cx="150" cy="70" r="1" fill="#E8E6E3" opacity="0.12"/>
+<circle cx="420" cy="110" r="0.8" fill="#E8E6E3" opacity="0.08"/>
+<circle cx="700" cy="50" r="1.1" fill="#E8E6E3" opacity="0.1"/>
+<circle cx="980" cy="90" r="0.9" fill="#E8E6E3" opacity="0.09"/>
+<circle cx="1200" cy="130" r="0.7" fill="#E8E6E3" opacity="0.07"/>
+<circle cx="300" cy="160" r="0.6" fill="#E8E6E3" opacity="0.08"/>
+<circle cx="850" cy="140" r="0.8" fill="#E8E6E3" opacity="0.06"/>
+<circle cx="1100" cy="60" r="1" fill="#E8E6E3" opacity="0.1"/>
+
+<!-- Distant mountain horizon — high ridge on left for wind, lower downstream right -->
+<path d="M0 505 Q60 488 120 492 Q180 485 230 495 Q320 510 420 518
+  Q520 512 580 520 Q650 516 750 522
+  Q860 510 950 518 Q1050 508 1150 515 Q1250 512 1400 518 V800 H0 Z"
+  fill="#141a22" opacity="0.5"/>
+<!-- Foreground ridge under wind turbines (darker, closer) -->
+<path d="M0 510 Q60 496 130 498 Q200 494 240 504 Q280 515 300 534 V800 H0 Z"
+  fill="#181F26" opacity="0.6"/>
+
+<!-- ═══════════════════════════════════════════════════
+     WIND TURBINES (far left, on a high ridge above reservoir)
+     ═══════════════════════════════════════════════════ -->
+
+<!-- Turbine 1 (nearest, largest) — tower base on ridge at y=500 -->
+<g id="wind1">
+  <line x1="130" y1="395" x2="130" y2="500" stroke="#2D3440" stroke-width="3.5" stroke-linecap="round"/>
+  <rect x="125" y="387" width="14" height="7" rx="2" fill="#2D3440"/>
+  <g id="wind1-blades">
+    <line x1="132" y1="390" x2="132" y2="342" stroke="#3D4450" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="132" y1="390" x2="173" y2="413" stroke="#3D4450" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="132" y1="390" x2="91" y2="413" stroke="#3D4450" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="132" cy="390" r="3" fill="#3D4450"/>
+  </g>
+</g>
+
+<!-- Turbine 2 (further back, smaller) — base at y=502 -->
+<g id="wind2">
+  <line x1="75" y1="425" x2="75" y2="502" stroke="#262D36" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="71" y="419" width="11" height="5.5" rx="1.5" fill="#2A3038"/>
+  <g id="wind2-blades">
+    <line x1="76" y1="422" x2="76" y2="387" stroke="#333B45" stroke-width="2" stroke-linecap="round"/>
+    <line x1="76" y1="422" x2="106" y2="439" stroke="#333B45" stroke-width="2" stroke-linecap="round"/>
+    <line x1="76" y1="422" x2="46" y2="439" stroke="#333B45" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="76" cy="422" r="2.5" fill="#333B45"/>
+  </g>
+</g>
+
+<!-- Turbine 3 (furthest, smallest) — base at y=498 -->
+<g id="wind3">
+  <line x1="195" y1="440" x2="195" y2="498" stroke="#222930" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="192" y="435" width="9" height="4.5" rx="1" fill="#262D36"/>
+  <g id="wind3-blades">
+    <line x1="196" y1="437" x2="196" y2="411" stroke="#2D3540" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="196" y1="437" x2="219" y2="450" stroke="#2D3540" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="196" y1="437" x2="173" y2="450" stroke="#2D3540" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="196" cy="437" r="2" fill="#2D3540"/>
+  </g>
+</g>
+
+<!-- ═══════════════════════════════════════════════════
+     SOLAR FIELD (downstream of dam, flat dry ground)
+     ═══════════════════════════════════════════════════ -->
+<g id="solar-field">
+  <!-- Panel rows (angled rectangles catching last light) -->
+  <g opacity="0.3">
+    <rect x="700" y="540" width="26" height="3" rx="0.5" fill="#3D4450" transform="rotate(-15 713 541)"/>
+    <rect x="730" y="540" width="26" height="3" rx="0.5" fill="#3D4450" transform="rotate(-15 743 541)"/>
+    <rect x="760" y="540" width="26" height="3" rx="0.5" fill="#3D4450" transform="rotate(-15 773 541)"/>
+    <rect x="790" y="540" width="26" height="3" rx="0.5" fill="#3D4450" transform="rotate(-15 803 541)"/>
+    <rect x="820" y="540" width="26" height="3" rx="0.5" fill="#3D4450" transform="rotate(-15 833 541)"/>
+  </g>
+  <g opacity="0.22">
+    <rect x="705" y="548" width="22" height="2.5" rx="0.5" fill="#333B45" transform="rotate(-15 716 549)"/>
+    <rect x="731" y="548" width="22" height="2.5" rx="0.5" fill="#333B45" transform="rotate(-15 742 549)"/>
+    <rect x="757" y="548" width="22" height="2.5" rx="0.5" fill="#333B45" transform="rotate(-15 768 549)"/>
+    <rect x="783" y="548" width="22" height="2.5" rx="0.5" fill="#333B45" transform="rotate(-15 794 549)"/>
+    <rect x="809" y="548" width="22" height="2.5" rx="0.5" fill="#333B45" transform="rotate(-15 820 549)"/>
+  </g>
+  <g opacity="0.15">
+    <rect x="710" y="555" width="18" height="2" rx="0.5" fill="#2D3540" transform="rotate(-15 719 556)"/>
+    <rect x="732" y="555" width="18" height="2" rx="0.5" fill="#2D3540" transform="rotate(-15 741 556)"/>
+    <rect x="754" y="555" width="18" height="2" rx="0.5" fill="#2D3540" transform="rotate(-15 763 556)"/>
+    <rect x="776" y="555" width="18" height="2" rx="0.5" fill="#2D3540" transform="rotate(-15 785 556)"/>
+    <rect x="798" y="555" width="18" height="2" rx="0.5" fill="#2D3540" transform="rotate(-15 807 556)"/>
+  </g>
+
+  <!-- Solar glint (sweeping highlight) -->
+  <g clip-path="url(#solar-glint-clip)">
+    <rect id="solar-glint" x="680" y="536" width="12" height="26" rx="2"
+      fill="#D4956A" opacity="0.15" transform="rotate(-15 686 549)"/>
+  </g>
+</g>
+
+<!-- ═══════════════════════════════════════════════════
+     DAM (center, dominant)
+     ═══════════════════════════════════════════════════ -->
+
+<!-- Dam face -->
+<path d="M580 530 L680 530 L700 800 H555 Z" fill="url(#dam-face)"/>
+<rect x="572" y="526" width="116" height="8" rx="1" fill="#2D3440"/>
+<!-- Buttress lines -->
+<line x1="600" y1="538" x2="578" y2="800" stroke="#252C35" stroke-width="1" opacity="0.3"/>
+<line x1="630" y1="538" x2="618" y2="800" stroke="#252C35" stroke-width="1" opacity="0.25"/>
+<line x1="660" y1="538" x2="658" y2="800" stroke="#252C35" stroke-width="1" opacity="0.3"/>
+
+<!-- Penstock -->
+<path d="M584 600 Q570 600 560 612 L520 672" stroke="#2D3440" stroke-width="6" fill="none" stroke-linecap="round"/>
+<path d="M584 600 Q570 600 560 612 L520 672" stroke="#1A2028" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+<!-- Powerhouse -->
+<rect x="490" y="665" width="75" height="42" rx="2" fill="#1E2530"/>
+<rect x="490" y="661" width="75" height="8" rx="1" fill="#2D3440"/>
+<!-- Warm windows -->
+<rect id="pw1" x="500" y="677" width="7" height="5" rx="1" fill="#F5A623" opacity="0.15"/>
+<rect id="pw2" x="512" y="677" width="7" height="5" rx="1" fill="#F5A623" opacity="0.2"/>
+<rect id="pw3" x="524" y="677" width="7" height="5" rx="1" fill="#F5A623" opacity="0.15"/>
+<rect id="pw4" x="536" y="677" width="7" height="5" rx="1" fill="#F5A623" opacity="0.1"/>
+
+<!-- Tailrace -->
+<path id="tailrace" d="M530 707 Q528 725 520 738 Q505 758 495 800"
+  stroke="#4A90B8" stroke-width="2.5" fill="none" opacity="0.06"/>
+
+<!-- Water body behind dam -->
+<g clip-path="url(#water-clip)">
+  <rect x="0" y="534" width="580" height="266" fill="url(#water-fill)"/>
+  <!-- Surface shimmer -->
+  <rect id="water-line1" x="100" y="536" width="400" height="1.5" fill="#4A90B8" opacity="0.15"/>
+  <rect id="water-line2" x="150" y="539" width="350" height="1" fill="#4A90B8" opacity="0.25"/>
+  <!-- Copper reflection -->
+  <ellipse id="water-reflect" cx="350" cy="565" rx="140" ry="12" fill="#B87333" opacity="0.04"/>
+</g>
+
+<!-- Water edge (at dam crest level, upstream side only) -->
+<line x1="0" y1="534" x2="572" y2="534" stroke="#4A90B8" stroke-width="0.8" opacity="0.15"/>
+
+<!-- ═══════════════════════════════════════════════════
+     THERMAL PLANT (right of solar field)
+     ═══════════════════════════════════════════════════ -->
+
+<!-- Cooling tower (hyperbolic silhouette) -->
+<path d="M910 530 Q910 490 920 470 Q930 460 940 458 Q950 460 960 470 Q970 490 970 530 Z"
+  fill="#1E2530" stroke="#2D3440" stroke-width="0.5"/>
+
+<!-- Second cooling tower (behind, smaller) -->
+<path d="M878 530 Q878 498 886 480 Q893 472 900 470 Q907 472 914 480 Q922 498 922 530 Z"
+  fill="#1A2028" stroke="#262D36" stroke-width="0.5" opacity="0.6"/>
+
+<!-- Smokestack -->
+<rect x="952" y="465" width="8" height="65" rx="1" fill="#252C35"/>
+
+<!-- Stack glow (warm tip) -->
+<circle id="stack-glow" cx="956" cy="465" r="4" fill="#F5A623" opacity="0.08"/>
+
+<!-- Heat shimmer (translucent rising shapes) -->
+<g id="heat-shimmer">
+  <ellipse id="shimmer1" cx="940" cy="450" rx="12" ry="4" fill="#B87333" opacity="0.02"/>
+  <ellipse id="shimmer2" cx="935" cy="438" rx="10" ry="3" fill="#B87333" opacity="0.015"/>
+  <ellipse id="shimmer3" cx="942" cy="425" rx="8" ry="3" fill="#B87333" opacity="0.01"/>
+</g>
+
+<!-- Thermal plant base structure -->
+<rect x="875" y="530" width="100" height="30" rx="1" fill="#1A2028"/>
+<rect x="885" y="540" width="12" height="10" rx="1" fill="#F5A623" opacity="0.06"/>
+<rect x="905" y="540" width="12" height="10" rx="1" fill="#F5A623" opacity="0.04"/>
+
+<!-- ═══════════════════════════════════════════════════
+     TRANSMISSION TOWERS (right, receding)
+     ═══════════════════════════════════════════════════ -->
+
+<!-- Tower A (near, large) -->
+<g id="tower-a">
+  <line x1="1000" y1="460" x2="1000" y2="558" stroke="#252C35" stroke-width="3.5"/>
+  <line x1="985" y1="472" x2="1015" y2="472" stroke="#252C35" stroke-width="2.5"/>
+  <line x1="988" y1="492" x2="1012" y2="492" stroke="#252C35" stroke-width="2"/>
+  <line x1="985" y1="472" x2="992" y2="558" stroke="#252C35" stroke-width="1.5"/>
+  <line x1="1015" y1="472" x2="1008" y2="558" stroke="#252C35" stroke-width="1.5"/>
+  <line x1="992" y1="510" x2="1008" y2="535" stroke="#252C35" stroke-width="0.8" opacity="0.4"/>
+  <line x1="1008" y1="510" x2="992" y2="535" stroke="#252C35" stroke-width="0.8" opacity="0.4"/>
+</g>
+
+<!-- Tower B (mid) -->
+<g id="tower-b">
+  <line x1="1120" y1="478" x2="1120" y2="545" stroke="#222930" stroke-width="2.5"/>
+  <line x1="1108" y1="486" x2="1132" y2="486" stroke="#222930" stroke-width="1.5"/>
+  <line x1="1110" y1="500" x2="1130" y2="500" stroke="#222930" stroke-width="1.2"/>
+  <line x1="1108" y1="486" x2="1113" y2="545" stroke="#222930" stroke-width="1.2"/>
+  <line x1="1132" y1="486" x2="1127" y2="545" stroke="#222930" stroke-width="1.2"/>
+</g>
+
+<!-- Tower C (far) -->
+<g id="tower-c">
+  <line x1="1240" y1="488" x2="1240" y2="538" stroke="#1F262E" stroke-width="2"/>
+  <line x1="1230" y1="494" x2="1250" y2="494" stroke="#1F262E" stroke-width="1.2"/>
+  <line x1="1232" y1="504" x2="1248" y2="504" stroke="#1F262E" stroke-width="1"/>
+  <line x1="1230" y1="494" x2="1234" y2="538" stroke="#1F262E" stroke-width="1"/>
+  <line x1="1250" y1="494" x2="1246" y2="538" stroke="#1F262E" stroke-width="1"/>
+</g>
+
+<!-- Tower D (furthest) -->
+<g id="tower-d">
+  <line x1="1330" y1="496" x2="1330" y2="530" stroke="#1C232B" stroke-width="1.5"/>
+  <line x1="1322" y1="500" x2="1338" y2="500" stroke="#1C232B" stroke-width="1"/>
+  <line x1="1322" y1="500" x2="1325" y2="530" stroke="#1C232B" stroke-width="0.8"/>
+  <line x1="1338" y1="500" x2="1335" y2="530" stroke="#1C232B" stroke-width="0.8"/>
+</g>
+
+<!-- Power lines between towers -->
+<path id="pline1" d="M970 472 Q990 478 1000 472 Q1040 478 1065 472" fill="none" stroke="#3D4450" stroke-width="0.8"/>
+<path id="pline2" d="M1015 472 Q1065 480 1108 486" fill="none" stroke="#3D4450" stroke-width="0.7"/>
+<path id="pline3" d="M1132 486 Q1185 492 1230 494" fill="none" stroke="#3D4450" stroke-width="0.6"/>
+<path id="pline4" d="M1250 494 Q1290 498 1322 500" fill="none" stroke="#3D4450" stroke-width="0.5"/>
+
+<!-- Lower power lines -->
+<path id="pline-lo1" d="M970 492 Q990 496 1000 492 Q1040 496 1065 492" fill="none" stroke="#3D4450" stroke-width="0.6"/>
+<path id="pline-lo2" d="M1012 492 Q1065 498 1110 500" fill="none" stroke="#3D4450" stroke-width="0.5"/>
+<path id="pline-lo3" d="M1130 500 Q1185 506 1232 504" fill="none" stroke="#3D4450" stroke-width="0.4"/>
+
+<!-- Spark paths (will be animated by GSAP) -->
+<circle id="spark1" cx="970" cy="472" r="2" fill="#F5A623" opacity="0"/>
+<circle id="spark2" cx="970" cy="492" r="1.5" fill="#D4956A" opacity="0"/>
+
+<!-- Lines from wind/solar to dam area (grid connection along the ridge) -->
+<path d="M140 500 Q250 515 400 522 Q500 526 572 530" fill="none" stroke="#3D4450" stroke-width="0.6" opacity="0.3"/>
+<circle id="spark3" cx="140" cy="500" r="1.5" fill="#4A8B6F" opacity="0"/>
+
+<!-- ═══════════════════════════════════════════════════
+     CITY SKYLINE (bottom right, silhouettes from page bottom)
+     ═══════════════════════════════════════════════════ -->
+
+<!-- Back row: taller buildings, darker (further away) -->
+<rect x="1080" y="680" width="18" height="120" rx="1" fill="#161D25"/>
+<rect x="1105" y="660" width="22" height="140" rx="1" fill="#151B23"/>
+<rect x="1135" y="690" width="16" height="110" rx="1" fill="#161D25"/>
+<rect x="1158" y="645" width="20" height="155" rx="1" fill="#141A22"/>
+<rect x="1185" y="670" width="24" height="130" rx="1" fill="#151B23"/>
+<rect x="1218" y="655" width="18" height="145" rx="1" fill="#161D25"/>
+<rect x="1242" y="685" width="22" height="115" rx="1" fill="#141A22"/>
+<rect x="1272" y="650" width="16" height="150" rx="1" fill="#151B23"/>
+<rect x="1295" y="675" width="20" height="125" rx="1" fill="#161D25"/>
+<rect x="1322" y="660" width="24" height="140" rx="1" fill="#141A22"/>
+<rect x="1355" y="690" width="18" height="110" rx="1" fill="#151B23"/>
+<rect x="1380" y="670" width="20" height="130" rx="1" fill="#161D25"/>
+
+<!-- Mid row: medium buildings, slightly lighter -->
+<rect x="1090" y="710" width="25" height="90" rx="1" fill="#1A2129"/>
+<rect x="1122" y="700" width="20" height="100" rx="1" fill="#1C232B"/>
+<rect x="1150" y="715" width="28" height="85" rx="1" fill="#1A2129"/>
+<rect x="1188" y="695" width="22" height="105" rx="1" fill="#1C232B"/>
+<rect x="1220" y="710" width="18" height="90" rx="1" fill="#1A2129"/>
+<rect x="1248" y="700" width="26" height="100" rx="1" fill="#1C232B"/>
+<rect x="1282" y="720" width="20" height="80" rx="1" fill="#1A2129"/>
+<rect x="1310" y="705" width="24" height="95" rx="1" fill="#1C232B"/>
+<rect x="1342" y="715" width="18" height="85" rx="1" fill="#1A2129"/>
+<rect x="1370" y="700" width="22" height="100" rx="1" fill="#1C232B"/>
+
+<!-- Front row: shorter, wider, closest -->
+<rect x="1075" y="740" width="30" height="60" rx="1" fill="#1E2630"/>
+<rect x="1112" y="745" width="22" height="55" rx="1" fill="#1F2731"/>
+<rect x="1142" y="738" width="35" height="62" rx="1" fill="#1E2630"/>
+<rect x="1185" y="748" width="28" height="52" rx="1" fill="#1F2731"/>
+<rect x="1222" y="742" width="20" height="58" rx="1" fill="#1E2630"/>
+<rect x="1250" y="750" width="32" height="50" rx="1" fill="#1F2731"/>
+<rect x="1290" y="738" width="24" height="62" rx="1" fill="#1E2630"/>
+<rect x="1322" y="745" width="28" height="55" rx="1" fill="#1F2731"/>
+<rect x="1358" y="740" width="20" height="60" rx="1" fill="#1E2630"/>
+<rect x="1385" y="748" width="15" height="52" rx="1" fill="#1F2731"/>
+
+<!-- Windows: back buildings -->
+<rect id="tw1" x="1109" y="670" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.22"/>
+<rect id="tw2" x="1115" y="680" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.15"/>
+<rect id="tw3" x="1109" y="690" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.18"/>
+<rect id="tw4" x="1162" y="656" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.20"/>
+<rect id="tw5" x="1168" y="668" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.12"/>
+<rect id="tw6" x="1162" y="680" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.16"/>
+<rect id="tw7" x="1190" y="680" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.18"/>
+<rect id="tw8" x="1196" y="692" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.10"/>
+<rect id="tw9" x="1222" y="665" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.20"/>
+<rect id="tw10" x="1228" y="678" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.14"/>
+<rect id="tw11" x="1276" y="660" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.18"/>
+<rect id="tw12" x="1276" y="672" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.12"/>
+<rect id="tw13" x="1326" y="670" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.22"/>
+<rect id="tw14" x="1332" y="682" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.14"/>
+<rect id="tw15" x="1384" y="680" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.16"/>
+
+<!-- Windows: mid buildings -->
+<rect id="tw16" x="1128" y="712" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.18"/>
+<rect id="tw17" x="1156" y="724" width="4" height="3" rx="0.5" fill="#F5A623" opacity="0.22"/>
+<rect id="tw18" x="1194" y="706" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.15"/>
+<rect id="tw19" x="1254" y="712" width="4" height="3" rx="0.5" fill="#F5A623" opacity="0.20"/>
+<rect id="tw20" x="1316" y="716" width="3" height="3" rx="0.5" fill="#F5A623" opacity="0.18"/>
+
+<!-- Windows: front buildings (brighter, closer) -->
+<rect x="1084" y="755" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.25"/>
+<rect x="1092" y="762" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.18"/>
+<rect x="1152" y="750" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.28"/>
+<rect x="1160" y="758" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.15"/>
+<rect x="1168" y="750" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.20"/>
+<rect x="1192" y="758" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.22"/>
+<rect x="1258" y="760" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.18"/>
+<rect x="1266" y="752" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.25"/>
+<rect x="1296" y="750" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.20"/>
+<rect x="1304" y="758" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.14"/>
+<rect x="1330" y="755" width="4" height="4" rx="0.5" fill="#F5A623" opacity="0.22"/>
+
+<!-- Ambient glow above city -->
+<ellipse cx="1230" cy="640" rx="100" ry="30" fill="#F5A623" opacity="0.015"/>
+
+</svg>
+
+<!-- ═══ TEXT ═══ -->
+<div class="hero-content">
+  <div class="logo-mark" id="logo">
+    <svg width="56" height="56" viewBox="0 0 100 100">
+      <line x1="18" y1="25" x2="68" y2="25" stroke="#B87333" stroke-width="4" stroke-linecap="round"/>
+      <line x1="18" y1="50" x2="68" y2="50" stroke="#B87333" stroke-width="4" stroke-linecap="round"/>
+      <line x1="18" y1="75" x2="68" y2="75" stroke="#B87333" stroke-width="4" stroke-linecap="round"/>
+      <line x1="68" y1="25" x2="68" y2="75" stroke="#B87333" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="68" cy="25" r="3.5" fill="#F5A623"/>
+      <circle cx="68" cy="50" r="3.5" fill="#F5A623"/>
+      <circle cx="68" cy="75" r="3.5" fill="#F5A623"/>
+      <path d="M76 18L84 25L76 32" fill="none" stroke="#F5A623" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h1 id="headline">Open infrastructure for<br>power system <strong>computation</strong></h1>
+  <p class="tagline" id="tagline">Stochastic optimization for hydrothermal dispatch. Built in Rust, open source, production-ready.</p>
+  <a class="hero-cmd" id="cmd">
+    <span class="prompt">$</span>
+    <span class="cmd-text">pip install cobre-python</span>
+    <span class="copied">Copied!</span>
+  </a>
+</div>
+
+</section>
+
+<!-- ═══ AUDIENCE CARDS ═══ -->
+<section class="section" id="paths">
+  <div class="cards">
+    <div class="card card-newave">
+      <h3>Already in the energy sector?</h3>
+      <p>Familiar with hydrothermal dispatch tools? Cobre works with your existing workflows. Convert cases and compare results side-by-side.</p>
+      <a class="card-link" href="https://docs.cobre-rs.dev">Migration guide &rarr;</a>
+    </div>
+    <div class="card card-sddp">
+      <h3>New to SDDP?</h3>
+      <p>Learn how stochastic optimization solves the hydrothermal dispatch problem. Interactive examples included.</p>
+      <div class="card-links">
+        <a class="card-link" href="https://docs.cobre-rs.dev">Start learning &rarr;</a>
+        <a class="card-link" href="https://methodology.cobre-rs.dev">Methodology &rarr;</a>
+      </div>
+    </div>
+    <div class="card card-python">
+      <h3>Python user?</h3>
+      <p>pip install, run, get results back as polars DataFrames. Zero-copy via Apache Arrow.</p>
+      <a class="card-link" href="https://pypi.org/project/cobre-python/">Python quickstart &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ METRICS ═══ -->
+<div class="metrics" id="metrics">
+  <div class="metric">
+    <div class="num" data-target="164" data-suffix="K">0</div>
+    <div class="label">Lines of Rust</div>
+  </div>
+  <div class="metric">
+    <div class="num" data-target="2747">0</div>
+    <div class="label">Tests</div>
+  </div>
+  <div class="metric">
+    <div class="num" data-target="0">0</div>
+    <div class="label">Proprietary dependencies</div>
+  </div>
+</div>
+
+<!-- ═══ CODE EXAMPLES ═══ -->
+<section class="section">
+  <div class="section-title">
+    <h2>Get started in three commands</h2>
+  </div>
+  <div class="code-section">
+    <div class="code-tabs">
+      <button class="code-tab active" data-tab="cli">CLI</button>
+      <button class="code-tab" data-tab="python">Python</button>
+      <button class="code-tab" data-tab="convert">Convert</button>
+    </div>
+    <div class="code-panel active" data-panel="cli">
+<pre><span class="cm"># Initialize a new study</span>
+<span class="pr">$</span> cobre <span class="fn">init</span> my-study
+
+<span class="cm"># Run training + simulation</span>
+<span class="pr">$</span> cobre <span class="fn">run</span> my-study/</pre>
+    </div>
+    <div class="code-panel" data-panel="python">
+<pre><span class="kw">import</span> cobre
+
+<span class="cm"># Load and run a study</span>
+study = cobre.<span class="fn">Study</span>(<span class="str">"my-study/"</span>)
+result = study.<span class="fn">run</span>()
+
+<span class="cm"># Results as polars DataFrames</span>
+costs = result.<span class="fn">simulation_costs</span>()
+<span class="fn">print</span>(costs.<span class="fn">head</span>())</pre>
+    </div>
+    <div class="code-panel" data-panel="convert">
+<pre><span class="cm"># Convert an existing NEWAVE deck</span>
+<span class="pr">$</span> cobre-bridge <span class="fn">convert</span> newave ./deck/ -o ./study/
+
+<span class="cm"># Run the converted case</span>
+<span class="pr">$</span> cobre <span class="fn">run</span> ./study/</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-links">
+    <a href="https://docs.cobre-rs.dev">Documentation</a>
+    <a href="https://github.com/cobre-rs/cobre">GitHub</a>
+    <a href="https://pypi.org/project/cobre-python/">PyPI</a>
+    <a href="https://methodology.cobre-rs.dev">Methodology</a>
+  </div>
+  <div class="footer-copy">Apache-2.0 &middot; cobre-rs</div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
+<script>
+gsap.registerPlugin(MotionPathPlugin);
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ─── Text entrance ───
+const entrance = gsap.timeline({ defaults: { ease: 'power3.out' } });
+entrance
+  .to('#logo', { opacity: 1, y: 0, duration: 0.8 }, 0.3)
+  .fromTo('#headline', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.9 }, 0.5)
+  .fromTo('#tagline', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.8 }, 0.7)
+  .fromTo('#cmd', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.7 }, 0.9);
+
+if (prefersReducedMotion) {
+  gsap.globalTimeline.progress(1);
+} else {
+
+  // ─── Wind turbine rotation (svgOrigin pins to SVG coordinate space) ───
+  gsap.to('#wind1-blades', { rotation: 360, duration: 8, repeat: -1, ease: 'none', svgOrigin: '132 390' });
+  gsap.to('#wind2-blades', { rotation: 360, duration: 11, repeat: -1, ease: 'none', svgOrigin: '76 422' });
+  gsap.to('#wind3-blades', { rotation: 360, duration: 14, repeat: -1, ease: 'none', svgOrigin: '196 437' });
+
+  // ─── Solar glint sweep ───
+  gsap.to('#solar-glint', {
+    x: 180,
+    duration: 4,
+    repeat: -1,
+    repeatDelay: 6,
+    ease: 'power1.inOut'
+  });
+
+  // ─── Horizon glow breathing ───
+  gsap.to('#glow', {
+    opacity: 0.9,
+    duration: 4,
+    repeat: -1,
+    yoyo: true,
+    ease: 'sine.inOut'
+  });
+
+  // ─── Water shimmer ───
+  gsap.to('#water-line1', { opacity: 0.3, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#water-line2', { opacity: 0.12, duration: 4, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1 });
+  gsap.to('#water-reflect', { opacity: 0.08, scaleX: 1.05, duration: 5, repeat: -1, yoyo: true, ease: 'sine.inOut', transformOrigin: 'center' });
+
+  // ─── Powerhouse window pulse ───
+  gsap.to('#pw1', { opacity: 0.25, duration: 2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0 });
+  gsap.to('#pw2', { opacity: 0.3, duration: 1.8, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.5 });
+  gsap.to('#pw3', { opacity: 0.22, duration: 2.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1 });
+  gsap.to('#pw4', { opacity: 0.18, duration: 2.5, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.5 });
+
+  // ─── Tailrace pulse ───
+  gsap.to('#tailrace', { opacity: 0.12, duration: 3, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  // ─── Thermal stack glow ───
+  gsap.to('#stack-glow', { opacity: 0.18, r: 6, duration: 2.5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  // ─── Town windows (gentle flickering, staggered) ───
+  const townWindows = [
+    { id: '#tw1', base: 0.18, peak: 0.28, dur: 3.2 },
+    { id: '#tw2', base: 0.12, peak: 0.20, dur: 4.1 },
+    { id: '#tw3', base: 0.20, peak: 0.32, dur: 2.8 },
+    { id: '#tw4', base: 0.10, peak: 0.18, dur: 3.5 },
+    { id: '#tw5', base: 0.15, peak: 0.24, dur: 3.9 },
+    { id: '#tw6', base: 0.22, peak: 0.35, dur: 2.5 },
+    { id: '#tw7', base: 0.10, peak: 0.16, dur: 4.3 },
+    { id: '#tw8', base: 0.16, peak: 0.26, dur: 3.0 },
+    { id: '#tw9', base: 0.08, peak: 0.14, dur: 5.0 },
+    { id: '#tw10', base: 0.12, peak: 0.20, dur: 3.7 },
+    { id: '#tw11', base: 0.15, peak: 0.25, dur: 2.9 },
+    { id: '#tw12', base: 0.08, peak: 0.16, dur: 4.5 },
+    { id: '#tw13', base: 0.18, peak: 0.28, dur: 3.3 },
+    { id: '#tw14', base: 0.10, peak: 0.18, dur: 4.0 },
+    { id: '#tw15', base: 0.14, peak: 0.24, dur: 3.6 },
+    { id: '#tw16', base: 0.20, peak: 0.32, dur: 2.7 },
+    { id: '#tw17', base: 0.15, peak: 0.25, dur: 3.4 },
+    { id: '#tw18', base: 0.12, peak: 0.20, dur: 4.2 },
+    { id: '#tw19', base: 0.18, peak: 0.30, dur: 2.6 },
+    { id: '#tw20', base: 0.10, peak: 0.18, dur: 3.8 },
+  ];
+  townWindows.forEach((w, i) => {
+    gsap.fromTo(w.id,
+      { opacity: w.base },
+      { opacity: w.peak, duration: w.dur, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: i * 0.3 }
+    );
+  });
+
+  // ─── Heat shimmer (rising, fading, looping) ───
+  function animateShimmer(id, dur, xDrift) {
+    gsap.to(id, {
+      y: -30,
+      x: xDrift,
+      opacity: 0,
+      duration: dur,
+      repeat: -1,
+      ease: 'power1.out',
+      onRepeat: function() {
+        gsap.set(id, { y: 0, x: 0, opacity: 0.02 });
+      }
+    });
+  }
+  animateShimmer('#shimmer1', 5, 3);
+  animateShimmer('#shimmer2', 6.5, -4);
+  animateShimmer('#shimmer3', 8, 2);
+
+  // ─── Power line sparks (motionPath along lines) ───
+  function sparkAlongPath(sparkId, pathId, duration, delay) {
+    gsap.set(sparkId, { opacity: 0 });
+    gsap.timeline({ repeat: -1, delay: delay })
+      .to(sparkId, { opacity: 0.9, duration: 0.2 })
+      .to(sparkId, {
+        motionPath: {
+          path: pathId,
+          align: pathId,
+          alignOrigin: [0.5, 0.5]
+        },
+        duration: duration,
+        ease: 'none'
+      }, '<')
+      .to(sparkId, { opacity: 0, duration: 0.3 }, `-=${0.3}`)
+      .set(sparkId, { clearProps: 'all' });
+  }
+
+  // Upper line sparks: thermal → tower A → B → C → D
+  sparkAlongPath('#spark1', '#pline1', 1.2, 0);
+  gsap.delayedCall(1.2, () => sparkAlongPath('#spark1', '#pline2', 1, 0));
+
+  // Create repeating spark sequences
+  function sparkSequence() {
+    const tl = gsap.timeline({ repeat: -1, repeatDelay: 3 });
+
+    // Spark along upper lines
+    tl.set('#spark1', { opacity: 0 })
+      .to('#spark1', { opacity: 0.9, duration: 0.15 })
+      .to('#spark1', { motionPath: { path: '#pline1', align: '#pline1', alignOrigin: [0.5, 0.5] }, duration: 1, ease: 'none' }, '<')
+      .to('#spark1', { opacity: 0, duration: 0.2 });
+
+    // Second spark offset
+    tl.set('#spark2', { opacity: 0 }, 1.5)
+      .to('#spark2', { opacity: 0.7, duration: 0.15 }, 1.5)
+      .to('#spark2', { motionPath: { path: '#pline-lo1', align: '#pline-lo1', alignOrigin: [0.5, 0.5] }, duration: 1.2, ease: 'none' }, 1.5)
+      .to('#spark2', { opacity: 0, duration: 0.2 });
+
+    // Green spark from wind farm
+    tl.set('#spark3', { opacity: 0 }, 3)
+      .to('#spark3', { opacity: 0.6, duration: 0.2 }, 3)
+      .to('#spark3', {
+        motionPath: {
+          path: 'M140,500 Q250,515 400,522 Q500,526 572,530',
+          alignOrigin: [0.5, 0.5]
+        },
+        duration: 2.5,
+        ease: 'none'
+      }, 3)
+      .to('#spark3', { opacity: 0, duration: 0.3 });
+
+    return tl;
+  }
+
+  sparkSequence();
+
+  // ─── Nav bar fade in ───
+  gsap.fromTo('#nav', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out', delay: 0.2 });
+}
+
+// ─── Tab switching ───
+document.querySelectorAll('.code-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.code-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector('[data-panel="' + target + '"]').classList.add('active');
+  });
+});
+
+// ─── Copy pip install command ───
+document.getElementById('cmd').addEventListener('click', function(e) {
+  e.preventDefault();
+  navigator.clipboard.writeText('pip install cobre-python').then(() => {
+    this.classList.add('show-copied');
+    setTimeout(() => this.classList.remove('show-copied'), 1500);
+  });
+});
+
+// ─── Metric counter animation on scroll ───
+const metricsEl = document.getElementById('metrics');
+let metricsCounted = false;
+
+function animateMetrics() {
+  if (metricsCounted) return;
+  metricsCounted = true;
+  document.querySelectorAll('.metric .num').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    if (target === 0) { el.textContent = '0'; return; }
+    const suffix = el.dataset.suffix || '';
+    gsap.to({ val: 0 }, {
+      val: target,
+      duration: 1.2,
+      ease: 'power1.out',
+      onUpdate: function() {
+        const v = Math.round(this.targets()[0].val);
+        el.textContent = (target >= 1000 ? v.toLocaleString() : v) + suffix;
+      }
+    });
+  });
+}
+
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) animateMetrics(); });
+  }, { threshold: 0.3 }).observe(metricsEl);
+} else {
+  animateMetrics();
+}
+</script>
+</body>
+</html>
