@@ -91,7 +91,7 @@ in the book.
 | **Nav bar**        | Fixed  | Logo + "Cobre" left, Docs / GitHub / PyPI links right. Transparent with backdrop blur. Always visible.                     |
 | **Hero**           | 90vh   | Atmospheric energy landscape SVG + GSAP animation. Headline, tagline, `pip install cobre-python` CTA.                      |
 | **Audience cards** | Auto   | Three cards with colored top borders: NEWAVE (red), New to SDDP (blue), Python (amber). Each links to the right book page. |
-| **Metrics**        | Auto   | Three numbers: 226K lines, 3,455 tests, 0 proprietary deps.                                                                |
+| **Metrics**        | Auto   | Three numbers: 229K lines, 3,562 tests, 0 proprietary deps.                                                                |
 | **Code examples**  | Auto   | Tabbed: CLI / Python / Convert. Syntax-highlighted with brand colors.                                                      |
 | **Footer**         | Auto   | Docs, GitHub, PyPI, Apache-2.0.                                                                                            |
 
